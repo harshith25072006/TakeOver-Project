@@ -6,25 +6,39 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { ADMIN_NAV, MAIN_NAV, type NavItem } from "./nav-config";
 
+import { motion } from "motion/react";
+import TextRoll from "@/components/ui/text-roll";
+
+const MotionLink = motion(Link);
+
 function NavLink({ item, onNavigate }: { item: NavItem; onNavigate?: () => void }) {
   const pathname = usePathname();
   const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
   const Icon = item.icon;
 
   return (
-    <Link
+    <MotionLink
       href={item.href}
       onClick={onNavigate}
+      initial="initial"
+      whileHover="hovered"
       className={cn(
         "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
         active
-          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+          ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold"
           : "text-sidebar-foreground/55 hover:bg-sidebar-accent/55 hover:text-sidebar-foreground",
       )}
     >
       <Icon className="size-[18px] shrink-0" strokeWidth={active ? 2 : 1.75} />
-      {item.label}
-    </Link>
+      <TextRoll
+        className={cn(
+          "bg-transparent text-inherit",
+          active ? "text-sidebar-accent-foreground font-semibold" : "text-sidebar-foreground/55"
+        )}
+      >
+        {item.label}
+      </TextRoll>
+    </MotionLink>
   );
 }
 
