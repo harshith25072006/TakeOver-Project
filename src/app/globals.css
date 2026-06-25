@@ -122,7 +122,83 @@
   --sidebar-accent-foreground: #111827;
   --sidebar-border: #e5e7eb;
   --sidebar-ring: #d1d5db;
+
+  /* Floor Banner responsive scaling variables */
+  --banner-height: 224px;
+  --semicircle-height: 180px;
+  --semicircle-width: 360px;
+  --semicircle-bottom: -20px;
+  --semicircle-border: 14px;
+  --floor-text-size: 10rem;
 }
+
+@media (min-width: 640px) {
+  :root {
+    --banner-height: 260px;
+    --semicircle-height: 270px;
+    --semicircle-width: 540px;
+    --semicircle-bottom: -40px;
+    --semicircle-border: 20px;
+    --floor-text-size: 14rem;
+  }
+}
+
+@media (min-width: 768px) {
+  :root {
+    --banner-height: 300px;
+    --semicircle-height: 360px;
+    --semicircle-width: 720px;
+    --semicircle-bottom: -60px;
+    --semicircle-border: 28px;
+    --floor-text-size: 20rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --banner-height: 350px;
+    --semicircle-height: 430px;
+    --semicircle-width: 860px;
+    --semicircle-bottom: -80px;
+    --semicircle-border: 36px;
+    --floor-text-size: 24rem;
+  }
+}
+
+/* Height-based overrides for short viewports/high zoom levels */
+@media (max-height: 850px) {
+  :root {
+    --banner-height: 250px;
+    --semicircle-height: 260px;
+    --semicircle-width: 520px;
+    --semicircle-bottom: -35px;
+    --semicircle-border: 18px;
+    --floor-text-size: 12rem;
+  }
+}
+
+@media (max-height: 700px) {
+  :root {
+    --banner-height: 180px;
+    --semicircle-height: 180px;
+    --semicircle-width: 360px;
+    --semicircle-bottom: -25px;
+    --semicircle-border: 14px;
+    --floor-text-size: 9rem;
+  }
+}
+
+@media (max-height: 550px) {
+  :root {
+    --banner-height: 120px;
+    --semicircle-height: 120px;
+    --semicircle-width: 240px;
+    --semicircle-bottom: -15px;
+    --semicircle-border: 10px;
+    --floor-text-size: 6rem;
+  }
+}
+
 
 @layer base {
   * {

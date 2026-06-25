@@ -76,7 +76,7 @@ export default async function FloorManagerPage({
       </div>
       <FloorBoard rooms={rooms} propertySlug={property.slug} />
       {/* Spacer to prevent fixed footer from covering content when scrolling */}
-      <div className="h-56 sm:h-[260px] md:h-[300px] lg:h-[350px]" />
+      <div style={{ height: "var(--banner-height)" }} />
       <FloorBanner 
         floorNumber={activeFloorNumber} 
         totalFloors={totalFloors} 
