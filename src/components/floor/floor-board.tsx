@@ -69,7 +69,13 @@ export function FloorBoard({ rooms, propertySlug }: { rooms: FloorRoom[]; proper
 
   return (
     <>
-      <div className="rounded-3xl bg-[#E4E4E4] p-5 sm:p-8 lg:p-12">
+      <div 
+        className="rounded-3xl bg-[#E4E4E4] px-5 sm:px-8 lg:px-12"
+        style={{
+          paddingTop: "var(--board-padding-y)",
+          paddingBottom: "var(--board-padding-y)"
+        }}
+      >
         <div className="flex flex-col gap-3 sm:gap-4">
           <div 
             className="grid gap-3 sm:gap-4 mx-auto"
