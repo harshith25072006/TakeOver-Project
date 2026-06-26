@@ -4,7 +4,8 @@ import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Upload, X } from "lucide-react";
+import { format } from "date-fns";
+import { CalendarClock, Loader2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -25,19 +26,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { saveBed } from "@/lib/actions/floor";
+import { giveNotice, saveBed } from "@/lib/actions/floor";
+import { vacateByDate } from "@/lib/tenancy";
 import { bedFormSchema, type BedFormValues } from "@/lib/validations/tenant";
 
 type Props = {
   bedId: string;
   defaults: BedFormValues;
   existingPhotoKey?: string | null;
+  /** Active tenancy id, when this bed is currently occupied. Enables Give Notice. */
+  tenancyId?: string | null;
+  /** When notice has already been served on the active tenancy. */
+  noticeGivenDate?: Date | null;
   onClose: () => void;
 };
 
-export function BedForm({ bedId, defaults, existingPhotoKey, onClose }: Props) {
+export function BedForm({
+  bedId,
+  defaults,
+  existingPhotoKey,
+  tenancyId,
+  noticeGivenDate,
+  onClose,
+}: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [noticePending, startNoticeTransition] = useTransition();
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(
     existingPhotoKey ? `/api/files/${existingPhotoKey}` : null,
@@ -68,7 +82,10 @@ export function BedForm({ bedId, defaults, existingPhotoKey, onClose }: Props) {
     if (values.occupancyStatus === "OCCUPIED") {
       fd.append("fullName", values.fullName);
       fd.append("phone", values.phone);
+      fd.append("email", values.email);
       fd.append("rentAmount", values.rentAmount);
+      fd.append("maintenanceCharge", values.maintenanceCharge);
+      fd.append("securityDeposit", values.securityDeposit);
       fd.append("checkInDate", values.checkInDate);
       fd.append("paymentStatus", values.paymentStatus);
       if (photo) fd.append("photo", photo);
@@ -82,6 +99,20 @@ export function BedForm({ bedId, defaults, existingPhotoKey, onClose }: Props) {
       }
       toast.success("Saved");
       onClose();
+      router.refresh();
+    });
+  }
+
+  function onGiveNotice() {
+    if (!tenancyId) return;
+    startNoticeTransition(async () => {
+      const res = await giveNotice(tenancyId);
+      if (!res.ok) {
+        toast.error(res.error);
+        return;
+      }
+      const vacateBy = format(vacateByDate(new Date()), "dd MMM yyyy");
+      toast.success(`Notice recorded. Tenant must vacate by ${vacateBy}`);
       router.refresh();
     });
   }
@@ -115,6 +146,24 @@ export function BedForm({ bedId, defaults, existingPhotoKey, onClose }: Props) {
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email Address (Optional)</FormLabel>
+              <FormControl>
+                <Input
+                  type="email"
+                  placeholder="tenant@example.com"
+                  disabled={pending}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -138,6 +187,54 @@ export function BedForm({ bedId, defaults, existingPhotoKey, onClose }: Props) {
                 <FormControl>
                   <Input type="date" disabled={pending} {...field} />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="maintenanceCharge"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Maintenance Charge (₹/month)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min={0}
+                    step={1}
+                    placeholder="0"
+                    disabled={pending}
+                    {...field}
+                  />
+                </FormControl>
+                <p className="text-xs text-muted-foreground">
+                  Additional monthly charge on top of rent (e.g. electricity, housekeeping)
+                </p>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="securityDeposit"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Security Deposit (₹)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min={0}
+                    step={1}
+                    placeholder="0"
+                    disabled={pending}
+                    {...field}
+                  />
+                </FormControl>
+                <p className="text-xs text-muted-foreground">
+                  ₹1,000 is held back as a maintenance reserve on move-in.
+                </p>
                 <FormMessage />
               </FormItem>
             )}
@@ -187,6 +284,32 @@ export function BedForm({ bedId, defaults, existingPhotoKey, onClose }: Props) {
             )}
           />
         </div>
+
+        {tenancyId ? (
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/30 px-3.5 py-3">
+            <div className="flex items-start gap-2.5">
+              <CalendarClock className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+              <div className="text-sm">
+                <p className="font-medium">Notice period</p>
+                <p className="text-xs text-muted-foreground">
+                  {noticeGivenDate
+                    ? `Notice given on ${format(noticeGivenDate, "dd MMM yyyy")} · vacate by ${format(vacateByDate(noticeGivenDate), "dd MMM yyyy")}`
+                    : "15-day notice. Vacate-by date is set when notice is given."}
+                </p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={pending || noticePending || Boolean(noticeGivenDate)}
+              onClick={onGiveNotice}
+            >
+              {noticePending ? <Loader2 className="size-4 animate-spin" /> : null}
+              {noticeGivenDate ? "Notice given" : "Give Notice"}
+            </Button>
+          </div>
+        ) : null}
 
         <div className="space-y-2">
           <Label>KYC Image</Label>

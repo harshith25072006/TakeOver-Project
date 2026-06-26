@@ -25,7 +25,14 @@ function buildDefaults(bed: FloorBed): BedFormValues {
       occupancyStatus: "OCCUPIED",
       fullName: tenancy.tenant.fullName,
       phone: tenancy.tenant.phone,
+      email: tenancy.tenant.email ?? "",
       rentAmount: String(paiseToRupees(tenancy.monthlyRent)),
+      maintenanceCharge: tenancy.maintenanceCharge
+        ? String(paiseToRupees(tenancy.maintenanceCharge))
+        : "",
+      securityDeposit: tenancy.securityDeposit
+        ? String(paiseToRupees(tenancy.securityDeposit))
+        : "",
       checkInDate: format(tenancy.checkInDate, "yyyy-MM-dd"),
       paymentStatus: tenancy.paymentStatus === "PAID" ? "PAID" : "PENDING",
     };
@@ -37,7 +44,10 @@ function buildDefaults(bed: FloorBed): BedFormValues {
     occupancyStatus: "OCCUPIED",
     fullName: "",
     phone: "",
+    email: "",
     rentAmount: "",
+    maintenanceCharge: "",
+    securityDeposit: "",
     checkInDate: todayISO(),
     paymentStatus: "PENDING",
   };
@@ -72,6 +82,8 @@ export function BedDialog({
             bedId={bed.id}
             defaults={buildDefaults(bed)}
             existingPhotoKey={bed.tenancies[0]?.tenant.photoUrl ?? null}
+            tenancyId={bed.tenancies[0]?.id ?? null}
+            noticeGivenDate={bed.tenancies[0]?.noticeGivenDate ?? null}
             onClose={() => onOpenChange(false)}
           />
         ) : null}

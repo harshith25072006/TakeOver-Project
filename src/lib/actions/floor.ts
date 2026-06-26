@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma";
 import { getSelectedPropertyId } from "@/lib/property";
 import { rupeesToPaise } from "@/lib/money";
 import { storage } from "@/lib/storage";
+import { MAINTENANCE_RESERVE_PAISE, resolveDepositStatusOnVacate } from "@/lib/tenancy";
 import { saveBedSchema } from "@/lib/validations/tenant";
 
 async function requireContext() {
@@ -47,7 +48,10 @@ export async function saveBed(formData: FormData): Promise<ActionResult> {
     occupancyStatus: field(formData, "occupancyStatus"),
     fullName: field(formData, "fullName"),
     phone: field(formData, "phone"),
+    email: field(formData, "email"),
     rentAmount: field(formData, "rentAmount"),
+    maintenanceCharge: field(formData, "maintenanceCharge"),
+    securityDeposit: field(formData, "securityDeposit"),
     checkInDate: field(formData, "checkInDate"),
     paymentStatus: field(formData, "paymentStatus"),
   });
@@ -64,7 +68,7 @@ export async function saveBed(formData: FormData): Promise<ActionResult> {
       tenancies: {
         where: { status: "ACTIVE" },
         take: 1,
-        select: { id: true, tenantId: true },
+        select: { id: true, tenantId: true, noticeGivenDate: true },
       },
     },
   });
@@ -75,9 +79,14 @@ export async function saveBed(formData: FormData): Promise<ActionResult> {
   if (data.occupancyStatus === "AVAILABLE") {
     await prisma.$transaction(async (tx) => {
       if (active) {
+        const checkOutDate = new Date();
+        const depositStatus = resolveDepositStatusOnVacate(
+          active.noticeGivenDate,
+          checkOutDate,
+        );
         await tx.tenancy.update({
           where: { id: active.id },
-          data: { status: "ENDED", checkOutDate: new Date() },
+          data: { status: "ENDED", checkOutDate, depositStatus },
         });
       }
       await tx.bed.update({ where: { id: bed.id }, data: { status: "AVAILABLE" } });
@@ -92,8 +101,13 @@ export async function saveBed(formData: FormData): Promise<ActionResult> {
   }
   const fullName = data.fullName;
   const phone = data.phone;
+  const email = data.email ? data.email : null;
   const checkInDate = data.checkInDate;
   const rentPaise = rupeesToPaise(data.rentAmount);
+  const maintenancePaise = rupeesToPaise(data.maintenanceCharge ?? 0);
+  // Gross deposit collected from the manager, in paise (null if none entered).
+  const grossDepositPaise =
+    data.securityDeposit !== undefined ? rupeesToPaise(data.securityDeposit) : null;
   const paymentStatus = data.paymentStatus ?? "PENDING";
 
   const photo = formData.get("photo");
@@ -116,11 +130,19 @@ export async function saveBed(formData: FormData): Promise<ActionResult> {
         tenancyId = active.id;
         await tx.tenant.update({
           where: { id: tenantId },
-          data: { fullName, phone, ...(saved ? { photoUrl: saved.key } : {}) },
+          data: { fullName, phone, email, ...(saved ? { photoUrl: saved.key } : {}) },
         });
         await tx.tenancy.update({
           where: { id: tenancyId },
-          data: { monthlyRent: rentPaise, paymentStatus, checkInDate },
+          data: {
+            monthlyRent: rentPaise,
+            maintenanceCharge: maintenancePaise,
+            // Editing an existing tenancy: the move-in reserve was already applied,
+            // so store the entered deposit as-is.
+            ...(grossDepositPaise !== null ? { securityDeposit: grossDepositPaise } : {}),
+            paymentStatus,
+            checkInDate,
+          },
         });
       } else {
         const tenant = await tx.tenant.create({
@@ -128,6 +150,7 @@ export async function saveBed(formData: FormData): Promise<ActionResult> {
             propertyId: ctx.propertyId,
             fullName,
             phone,
+            email,
             photoUrl: saved?.key ?? null,
           },
         });
@@ -140,6 +163,12 @@ export async function saveBed(formData: FormData): Promise<ActionResult> {
             roomId: bed.roomId,
             status: "ACTIVE",
             monthlyRent: rentPaise,
+            maintenanceCharge: maintenancePaise,
+            // Move-in: hold back the fixed ₹1000 maintenance reserve from the deposit.
+            securityDeposit:
+              grossDepositPaise !== null
+                ? Math.max(0, grossDepositPaise - MAINTENANCE_RESERVE_PAISE)
+                : null,
             paymentStatus,
             checkInDate,
           },
@@ -192,6 +221,31 @@ export async function saveBed(formData: FormData): Promise<ActionResult> {
     if (saved) await storage.remove(saved.key);
     return actionError("Could not save. Please try again.");
   }
+
+  revalidateFloorViews();
+  return actionOk();
+}
+
+/**
+ * Record that the tenant on an active tenancy has given notice. The vacate-by
+ * date (notice date + 15 days) is derived, not stored. Idempotent: if notice was
+ * already given the existing date is kept.
+ */
+export async function giveNotice(tenancyId: string): Promise<ActionResult> {
+  const ctx = await requireContext();
+  if (!ctx) return actionError("Not authenticated");
+
+  const tenancy = await prisma.tenancy.findFirst({
+    where: { id: tenancyId, propertyId: ctx.propertyId, status: "ACTIVE" },
+    select: { id: true, noticeGivenDate: true },
+  });
+  if (!tenancy) return actionError("Active tenancy not found");
+  if (tenancy.noticeGivenDate) return actionError("Notice has already been given");
+
+  await prisma.tenancy.update({
+    where: { id: tenancy.id },
+    data: { noticeGivenDate: new Date() },
+  });
 
   revalidateFloorViews();
   return actionOk();

@@ -58,10 +58,12 @@ export async function getFloorLayout(floorId: string, propertyId: string) {
               id: true,
               paymentStatus: true,
               monthlyRent: true,
+              maintenanceCharge: true,
               securityDeposit: true,
+              noticeGivenDate: true,
               checkInDate: true,
               tenant: {
-                select: { id: true, fullName: true, phone: true, photoUrl: true },
+                select: { id: true, fullName: true, phone: true, email: true, photoUrl: true },
               },
             },
           },
