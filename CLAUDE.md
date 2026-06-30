@@ -11,8 +11,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this is
 
 Triya Manager is a PG / co-living management system for property staff: occupancy
-(floor → room → bed), tenants, rent collections, payments, complaints, and expenses,
-all scoped to a single "active property" selected per session.
+(floor → room → bed), tenants, rent collections, payments, WhatsApp rent invoices,
+complaints, and expenses, all scoped to a single "active property" selected per
+session.
 
 ## Commands
 
@@ -132,6 +133,38 @@ driver writing **outside the web root** (`STORAGE_LOCAL_DIR`). Files are served 
 through the authenticated route `src/app/api/files/[...key]/route.ts` — `storageKey`
 columns are paths, never public URLs. Swapping to S3/R2 = implement the interface and
 repoint `storage`. `next.config.ts` raises the server-actions body limit for uploads.
+
+### Invoices & WhatsApp delivery
+
+Rent invoices are **part of the collections slice**, not their own feature folder:
+actions live in `src/lib/actions/collections.ts` (`prepareInvoice`, `sendInvoice`,
+`resendInvoice`), the history query in `src/lib/queries/invoices.ts`, validation in
+`src/lib/validations/invoice.ts`, and UI under `src/components/collections/`
+(`invoice-*.tsx`, `send-invoice-button.tsx`).
+
+- **One shape, two renderers.** `src/lib/invoice-compute.ts` is a **pure, client-safe**
+  module (no Node/Prisma — same pattern as `tenancy.ts`) defining `InvoiceView` and
+  `computeInvoiceTotals`. The on-screen HTML preview and the server-generated PDF both
+  render from the same `InvoiceView`, so the numbers always agree. Charges are integer
+  paise; `total = (rent + maintenance + previousDue + extra) − discount`, floored at 0.
+- **PDF**: `src/lib/invoice.ts` (`server-only`) renders an A4 PDF with `pdf-lib`. Its
+  standard fonts are WinAnsi and **cannot draw the ₹ glyph**, so the PDF uses an `Rs.`
+  prefix; the HTML preview and WhatsApp body are unicode and use ₹.
+- **Delivery**: `src/lib/twilio.ts` (`server-only`) sends a WhatsApp media message via
+  Twilio; lazy singleton client, normalizes Indian numbers to `whatsapp:+E164`.
+- **Twilio must fetch the PDF by URL from the cloud**, which drives two pieces:
+  `src/lib/public-url.ts` resolves `APP_PUBLIC_URL` and **rejects localhost with an
+  actionable error** (use an ngrok tunnel in dev); and the PDF is served through the
+  normal authenticated `api/files/[...key]` route, which also accepts a short-lived
+  **HMAC-signed token** (`src/lib/file-token.ts`, signed with `AUTH_SECRET`) so Twilio
+  can fetch it without a session and without ever minting a permanent public link.
+- **`sendInvoice` is staged so a failure never orphans data**: (1) reserve the invoice
+  row + number (`INV-YYYYMM-NNNN`, unique per property); (2) render + store the PDF,
+  deleting the reserved row if this fails; (3) send WhatsApp — on send failure the row
+  is **kept as `status = FAILED`** so `resendInvoice` can retry it.
+- **Env**: invoices need `APP_PUBLIC_URL` (public, non-localhost) and
+  `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` / `TWILIO_WHATSAPP_NUMBER` (see
+  `.env.example`).
 
 ### Conventions
 
