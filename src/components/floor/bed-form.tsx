@@ -325,7 +325,7 @@ export function BedForm({
                     <FormItem>
                       <FormLabel>Cash (₹)</FormLabel>
                       <FormControl>
-                        <Input type="number" min={0} placeholder="0" disabled={pending} {...field} />
+                        <Input type="number" min={0} placeholder="0" disabled={pending} {...field} value={field.value ?? ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -338,7 +338,7 @@ export function BedForm({
                     <FormItem>
                       <FormLabel>Online (₹)</FormLabel>
                       <FormControl>
-                        <Input type="number" min={0} placeholder="0" disabled={pending} {...field} />
+                        <Input type="number" min={0} placeholder="0" disabled={pending} {...field} value={field.value ?? ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
