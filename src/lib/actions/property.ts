@@ -5,11 +5,15 @@ import { revalidatePath } from "next/cache";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { PROPERTY_COOKIE } from "@/lib/property";
+import { accessiblePropertyWhere, PROPERTY_COOKIE } from "@/lib/property";
 
 const ONE_YEAR = 60 * 60 * 24 * 365;
 
-/** Set the globally-selected property. Validates the property exists and is active. */
+/**
+ * Set the globally-selected property. Validates the property exists, is active, and
+ * that the signed-in user is actually allowed to access it (a property manager can
+ * only ever select their own property).
+ */
 export async function selectProperty(
   propertyId: string,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
@@ -18,8 +22,13 @@ export async function selectProperty(
     return { ok: false, error: "Not authenticated" };
   }
 
+  const scope = await accessiblePropertyWhere();
+  if (!scope) {
+    return { ok: false, error: "Not authenticated" };
+  }
+
   const property = await prisma.property.findFirst({
-    where: { id: propertyId, isActive: true },
+    where: { id: propertyId, isActive: true, ...scope },
     select: { id: true },
   });
   if (!property) {
