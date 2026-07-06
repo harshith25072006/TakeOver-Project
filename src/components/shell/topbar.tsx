@@ -20,8 +20,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { selectProperty } from "@/lib/actions/property";
@@ -38,6 +36,10 @@ type Props = {
 export function Topbar({ property, properties, user }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  // Only admins reach more than one property; a property manager is locked to theirs,
+  // so there is nothing to switch to — show it as a static label instead of a menu.
+  const canSwitch = properties.length > 1;
 
   const handleSelectProperty = (propertyId: string) => {
     if (propertyId === property.id) return;
@@ -65,46 +67,58 @@ export function Topbar({ property, properties, user }: Props) {
         </SheetContent>
       </Sheet>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button 
-            variant="outline" 
-            className="flex min-w-[160px] sm:min-w-[200px] h-10 items-center justify-between gap-2 px-3 py-1.5 rounded-lg border border-border bg-card shadow-2xs hover:bg-muted/50" 
-            disabled={isPending}
-          >
-            <div className="flex flex-col items-start min-w-0 text-left">
-              <span className="truncate text-xs font-semibold leading-none text-foreground">{property.name}</span>
-              {property.city ? (
-                <span className="truncate text-[10px] text-muted-foreground mt-0.5">{property.city}</span>
-              ) : null}
-            </div>
-            {isPending ? (
-              <Loader2 className="size-3.5 animate-spin text-muted-foreground shrink-0 ml-1" />
-            ) : (
-              <ChevronDown className="size-3.5 text-muted-foreground shrink-0 ml-1" />
-            )}
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-[240px]">
-
-          {properties.map((p) => (
-            <DropdownMenuItem
-              key={p.id}
-              onClick={() => handleSelectProperty(p.id)}
-              className="flex items-center gap-2 cursor-pointer"
+      {canSwitch ? (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              className="flex min-w-[160px] sm:min-w-[200px] h-10 items-center justify-between gap-2 px-3 py-1.5 rounded-lg border border-border bg-card shadow-2xs hover:bg-muted/50"
+              disabled={isPending}
             >
-              <Building2 className="size-4 text-muted-foreground shrink-0" />
-              <div className="flex flex-col min-w-0">
-                <span className="truncate text-sm font-medium">{p.name}</span>
-                {p.city && <span className="truncate text-xs text-muted-foreground">{p.city}</span>}
+              <div className="flex flex-col items-start min-w-0 text-left">
+                <span className="truncate text-xs font-semibold leading-none text-foreground">{property.name}</span>
+                {property.city ? (
+                  <span className="truncate text-[10px] text-muted-foreground mt-0.5">{property.city}</span>
+                ) : null}
               </div>
-              {p.id === property.id && (
-                <Check className="size-4 ml-auto text-primary shrink-0" />
+              {isPending ? (
+                <Loader2 className="size-3.5 animate-spin text-muted-foreground shrink-0 ml-1" />
+              ) : (
+                <ChevronDown className="size-3.5 text-muted-foreground shrink-0 ml-1" />
               )}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-[240px]">
+
+            {properties.map((p) => (
+              <DropdownMenuItem
+                key={p.id}
+                onClick={() => handleSelectProperty(p.id)}
+                className="flex items-center gap-2 cursor-pointer"
+              >
+                <Building2 className="size-4 text-muted-foreground shrink-0" />
+                <div className="flex flex-col min-w-0">
+                  <span className="truncate text-sm font-medium">{p.name}</span>
+                  {p.city && <span className="truncate text-xs text-muted-foreground">{p.city}</span>}
+                </div>
+                {p.id === property.id && (
+                  <Check className="size-4 ml-auto text-primary shrink-0" />
+                )}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ) : (
+        <div className="flex min-w-[160px] sm:min-w-[200px] h-10 items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 shadow-2xs">
+          <Building2 className="size-4 text-muted-foreground shrink-0" />
+          <div className="flex flex-col items-start min-w-0 text-left">
+            <span className="truncate text-xs font-semibold leading-none text-foreground">{property.name}</span>
+            {property.city ? (
+              <span className="truncate text-[10px] text-muted-foreground mt-0.5">{property.city}</span>
+            ) : null}
+          </div>
+        </div>
+      )}
 
       <div className="ml-auto">
         <UserMenu user={user} />
