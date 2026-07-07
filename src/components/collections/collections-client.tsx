@@ -25,7 +25,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatINR } from "@/lib/money";
 import type { CollectionRow } from "@/lib/queries/collections";
 import type { InvoiceHistoryRow } from "@/lib/queries/invoices";
-import { PAYMENT_STATUS_META } from "@/lib/status";
+import { PAYMENT_STATUS_META, TEST_STATUS_META } from "@/lib/status";
+import { TEST_TENANT_MARKER } from "@/lib/tenancy";
+import { AiCallButton } from "./ai-call-button";
 import { InvoiceHistory } from "./invoice-history";
 import { SendInvoiceButton } from "./send-invoice-button";
 
@@ -124,18 +126,20 @@ function DuesTab({ rows }: { rows: CollectionRow[] }) {
               <TableHead className="w-36">Last Invoice</TableHead>
               <TableHead className="w-28">Status</TableHead>
               <TableHead className="w-36 text-right">Actions</TableHead>
+              <TableHead className="w-36 text-right">Call</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center text-sm text-muted-foreground">
+                <TableCell colSpan={9} className="h-24 text-center text-sm text-muted-foreground">
                   No tenants match your filters.
                 </TableCell>
               </TableRow>
             ) : (
               filtered.map((r) => {
                 const totalDue = r.monthlyRent + r.maintenanceCharge;
+                const isTestTenant = r.tenant.notes === TEST_TENANT_MARKER;
                 return (
                   <TableRow key={r.id}>
                     <TableCell className="font-medium">{r.tenant.fullName}</TableCell>
@@ -153,10 +157,13 @@ function DuesTab({ rows }: { rows: CollectionRow[] }) {
                       {r.invoices[0] ? format(new Date(r.invoices[0].createdAt), "MMM d, yyyy") : "Never"}
                     </TableCell>
                     <TableCell>
-                      <StatusBadge meta={PAYMENT_STATUS_META[r.paymentStatus]} />
+                      <StatusBadge meta={isTestTenant ? TEST_STATUS_META : PAYMENT_STATUS_META[r.paymentStatus]} />
                     </TableCell>
                     <TableCell className="text-right">
                       <SendInvoiceButton tenancyId={r.id} />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <AiCallButton tenantId={r.tenant.id} />
                     </TableCell>
                   </TableRow>
                 );

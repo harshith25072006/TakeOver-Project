@@ -33,6 +33,9 @@ export const PAYMENT_STATUS_META: Record<PaymentStatus, Meta> = {
   OVERDUE: { label: "Overdue", ...TONE.red },
 };
 
+/** Badge for synthetic test tenants (see TEST_TENANT_MARKER) — not a real PaymentStatus. */
+export const TEST_STATUS_META: Meta = { label: "Test", ...TONE.neutral };
+
 export const COMPLAINT_STATUS_META: Record<ComplaintStatus, Meta> = {
   OPEN: { label: "Open", ...TONE.red },
   IN_PROGRESS: { label: "In Progress", ...TONE.amber },

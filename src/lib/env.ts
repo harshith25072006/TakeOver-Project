@@ -29,6 +29,18 @@ const envSchema = z.object({
   AISENSY_CAMPAIGN_RENT_REMINDER: z.string().optional(),
   AISENSY_CAMPAIGN_COMPLAINT_RESOLVED: z.string().optional(),
   AISENSY_CAMPAIGN_CREDENTIALS: z.string().optional(),
+
+  // Exotel: outbound AI/test calling. CALLER_ID is the purchased ExoPhone shown as
+  // caller ID; without it the API rejects every call attempt. APP_ID is the App
+  // Bazaar app id for the Greeting->Hangup Flow that plays the dynamic greeting
+  // (see src/config/env.ts) — Exotel calls connect to a pre-built flow, not
+  // directly to our server, so this can't be hardcoded.
+  EXOTEL_ACCOUNT_SID: z.string().optional(),
+  EXOTEL_API_KEY: z.string().optional(),
+  EXOTEL_API_TOKEN: z.string().optional(),
+  EXOTEL_SUBDOMAIN: z.string().optional(),
+  EXOTEL_CALLER_ID: z.string().optional(),
+  EXOTEL_APP_ID: z.string().optional(),
 });
 
 function loadEnv() {

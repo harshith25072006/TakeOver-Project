@@ -81,6 +81,13 @@ enum InvoiceStatus {
   FAILED
 }
 
+enum CallStatus {
+  CALLING
+  CONNECTED
+  COMPLETED
+  FAILED
+}
+
 // ============================================================================
 // Auth (Auth.js v5). Credentials + JWT today; Account/Session/VerificationToken
 // included to future-proof OAuth and the owner dashboard.
@@ -210,6 +217,7 @@ model Property {
   expenses       Expense[]
   floorTemplates FloorTemplate[]
   invoices       Invoice[]
+  calls          Call[]
 
   expenseCategories    ExpenseCategory[]
   expenseSubcategories ExpenseSubcategory[]
@@ -362,6 +370,7 @@ model Tenant {
   payments   Payment[]
   complaints Complaint[]
   invoices   Invoice[]
+  calls      Call[]
 
   @@index([propertyId])
   @@index([phone])
@@ -481,6 +490,28 @@ model Invoice {
   @@index([tenancyId])
   @@index([tenantId])
   @@index([billingMonth])
+}
+
+// An outbound AI/test call placed via Exotel. One row per call attempt, tracked
+// from initiation through Exotel's StatusCallback webhook so the UI can poll for
+// live status without holding any Exotel credentials client-side.
+model Call {
+  id         String     @id @default(cuid())
+  propertyId String
+  tenantId   String
+  phone      String
+  message    String
+  callSid    String?    @unique // Exotel Call Sid; null until the API call succeeds
+  status     CallStatus @default(CALLING)
+  error      String? // Exotel's error message, when status = FAILED
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@index([tenantId])
 }
 
 // ============================================================================
