@@ -23,7 +23,7 @@ export default async function SelectPropertyPage() {
       <div className="w-full max-w-2xl">
         <div className="mb-8">
           <span className="text-xs font-semibold tracking-[0.18em] text-secondary-surface uppercase">
-            Triya Manager
+            DAZZ Manager
           </span>
           <h1 className="mt-3 text-[2rem] font-bold tracking-tight text-white">
             {properties.length === 1 ? "Opening your property" : "Select a property"}

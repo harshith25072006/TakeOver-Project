@@ -1,4 +1,4 @@
-// Triya Manager - PG Management System
+// DAZZ Manager - PG Management System
 // Prisma 7 schema. The datasource URL is supplied via prisma.config.ts (reads .env).
 // Client is generated into src/generated/prisma (see generator below).
 //
@@ -164,7 +164,7 @@ model Property {
   phone     String? // contact number shown on invoices
   // Storage key (not a public URL) of the property's own logo, served through the
   // authenticated /api/files route. Used on invoices and in the app chrome; falls back
-  // to the Triya brand logo when null. See src/lib/storage.ts.
+  // to the DAZZ brand logo when null. See src/lib/storage.ts.
   logoKey   String?
   // When true the property is organised into blocks (e.g. Frieden A / B) and the
   // Floor Manager shows a Block selector before the Floor selector.

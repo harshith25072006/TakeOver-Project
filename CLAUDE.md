@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Triya Manager is a PG / co-living management system for property staff: occupancy
+DAZZ Manager is a PG / co-living management system for property staff: occupancy
 (floor → room → bed), tenants, rent collections, payments, WhatsApp rent invoices,
 complaints, and expenses, all scoped to a single "active property" selected per
 session.
@@ -36,7 +36,7 @@ No test runner is configured — there is no test command. Verify changes with
 `npm run build` (runs `tsc`) and `npm run lint`.
 
 First-time setup: `cp .env.example .env`, `npm run db:up`, `npm run db:migrate`,
-`npm run db:seed`. Seeded login: `admin@triya.local` / `Admin@12345` (staff users
+`npm run db:seed`. Seeded login: `admin@dazz.local` / `Admin@12345` (staff users
 use `Staff@12345`).
 
 ## Architecture
@@ -65,7 +65,7 @@ settings) is a vertical slice with the same shape:
 ### Multi-tenancy: the active property
 
 The app is always scoped to one property. The selected id lives in an httpOnly cookie
-(`triya.property`), set by `selectProperty` in `src/lib/actions/property.ts`.
+(`dazz.property`), set by `selectProperty` in `src/lib/actions/property.ts`.
 
 - Server: `src/lib/property.ts` — `getSelectedPropertyId()`, `getActiveProperty()`,
   `requireActiveProperty()`. **Every query and action must filter by this

@@ -6,7 +6,7 @@ import { auth } from "@/auth";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
-export const PROPERTY_COOKIE = "triya.property";
+export const PROPERTY_COOKIE = "dazz.property";
 
 /** The currently selected property id from the cookie (no validation). */
 export async function getSelectedPropertyId(): Promise<string | null> {

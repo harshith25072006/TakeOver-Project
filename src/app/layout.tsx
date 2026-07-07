@@ -13,8 +13,8 @@ const sora = Sora({
 
 export const metadata: Metadata = {
   title: {
-    default: "Triya Manager",
-    template: "%s · Triya Manager",
+    default: "DAZZ Manager",
+    template: "%s · DAZZ Manager",
   },
   description:
     "Centralized PG property management — rooms, beds, tenants, payments and operations.",

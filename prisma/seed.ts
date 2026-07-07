@@ -53,7 +53,7 @@ const PROPERTIES: PropertyConfig[] = [
     slug: "joystayz",
     address: "Plot 42, Gachibowli",
     city: "Hyderabad",
-    account: { email: "joystayz@triya.local", password: "joystayz@12345" },
+    account: { email: "joystayz@dazz.local", password: "joystayz@12345" },
     hasBlocks: false,
     template: JOYSTAYZ_FLOOR,
     floors: [3, 4, 5, 6, 7].map((number) => ({ number, name: `Floor ${number}` })),
@@ -63,7 +63,7 @@ const PROPERTIES: PropertyConfig[] = [
     slug: "frieden",
     address: "Road No. 12, Banjara Hills",
     city: "Hyderabad",
-    account: { email: "frieden@triya.local", password: "frieden@12345" },
+    account: { email: "frieden@dazz.local", password: "frieden@12345" },
     hasBlocks: true,
     blocks: [
       {
@@ -91,7 +91,7 @@ const PROPERTIES: PropertyConfig[] = [
     slug: "cozy-gowlidoddy",
     address: "Survey 88, Gowlidoddy",
     city: "Hyderabad",
-    account: { email: "cozy@triya.local", password: "cozy@12345" },
+    account: { email: "cozy@dazz.local", password: "cozy@12345" },
     isFlat: true,
     hasBlocks: true,
     blocks: [
@@ -184,7 +184,7 @@ async function seedExpenseCategories() {
 async function seedUsers() {
   const passwordHash = bcrypt.hashSync("Admin@12345", 10);
   await prisma.user.create({
-    data: { name: "Triya Admin", email: "admin@triya.local", passwordHash, role: "ADMIN" },
+    data: { name: "DAZZ Admin", email: "admin@dazz.local", passwordHash, role: "ADMIN" },
   });
 }
 
@@ -333,7 +333,7 @@ async function main() {
   console.log(`  Rooms:      ${roomCount}`);
   console.log(`  Beds:       ${bedCount}`);
   console.log("\nAccounts:");
-  console.log("  admin@triya.local / Admin@12345      (ADMIN — all properties)");
+  console.log("  admin@dazz.local / Admin@12345      (ADMIN — all properties)");
   for (const config of PROPERTIES) {
     console.log(`  ${config.account.email} / ${config.account.password}   (MANAGER — ${config.name})`);
   }

@@ -46,7 +46,7 @@ export default async function LoginPage({
           </span>
           <div className="relative">
             <h2 className="text-[2.25rem] leading-[1.02] font-bold tracking-[-0.02em] text-primary">
-              Triya
+              DAZZ
               <br />
               Manager
             </h2>

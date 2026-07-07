@@ -322,7 +322,7 @@ function AddPropertyWizard() {
   const [password, setPassword] = useState("");
   const [sections, setSections] = useState<SectionInput[]>([emptySection()]);
 
-  const derivedEmail = name.trim() ? `${slugify(name) || "property"}@triya.local` : "";
+  const derivedEmail = name.trim() ? `${slugify(name) || "property"}@dazz.local` : "";
   const effectiveEmail = emailEdited ? email : derivedEmail;
 
   const roomsPerFloor = (section: SectionInput): number[] =>
@@ -478,7 +478,7 @@ function AddPropertyWizard() {
                     setEmailEdited(true);
                     setEmail(event.target.value);
                   }}
-                  placeholder="account@triya.local"
+                  placeholder="account@dazz.local"
                 />
               </div>
               <div className="space-y-1.5">

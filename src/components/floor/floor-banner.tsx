@@ -26,12 +26,23 @@ export function FloorBanner({
         </Link>
       </div>
 
+      {/* Right side: Giant Outlined Floor Number (sits behind the semicircle) */}
+      <div
+        className="absolute right-6 sm:right-8 lg:right-12 bottom-0 font-bold leading-none tracking-tighter text-transparent select-none z-0 pointer-events-none"
+        style={{
+          WebkitTextStroke: "2.5px #2c3040",
+          fontSize: "var(--floor-text-size)"
+        }}
+      >
+        {activeFloorNumStr}
+      </div>
+
       {/* Center: Giant Semicircle Dial */}
-      <div 
-        className="absolute inset-x-0 flex justify-center items-end h-full pointer-events-none z-0"
+      <div
+        className="absolute inset-x-0 flex justify-center items-end h-full pointer-events-none z-10"
         style={{ bottom: "var(--semicircle-bottom)" }}
       >
-        <div 
+        <div
           className="relative bg-[#2563eb] rounded-t-full border-[#2c3040] overflow-visible"
           style={{
             width: "var(--semicircle-width)",
@@ -39,17 +50,6 @@ export function FloorBanner({
             borderWidth: "var(--semicircle-border)",
           }}
         />
-      </div>
-
-      {/* Right side: Giant Outlined Floor Number */}
-      <div 
-        className="absolute right-6 sm:right-8 lg:right-12 bottom-0 font-bold leading-none tracking-tighter text-transparent select-none z-10 pointer-events-none"
-        style={{ 
-          WebkitTextStroke: "2.5px #2c3040",
-          fontSize: "var(--floor-text-size)"
-        }}
-      >
-        {activeFloorNumStr}
       </div>
     </div>
   );

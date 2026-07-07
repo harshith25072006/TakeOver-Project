@@ -57,7 +57,7 @@ export function SidebarContent({
       <div className="mb-8 flex h-12 items-center px-3">
         <Image 
           src="/logo.png" 
-          alt="Triya Logo" 
+          alt="DAZZ Logo"
           width={160} 
           height={48} 
           className="object-contain"
