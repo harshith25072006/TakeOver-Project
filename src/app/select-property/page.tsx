@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { auth } from "@/auth";
+import { AddOwnedPropertyWizard } from "@/components/property/add-owned-property-wizard";
 import { PropertyPicker } from "@/components/property/property-picker";
 import { listProperties } from "@/lib/property";
 
@@ -45,9 +46,20 @@ export default async function SelectPropertyPage() {
           </p>
         </div>
         {properties.length === 0 ? (
-          <p className="rounded-xl border border-white/10 bg-white/[0.04] p-6 text-center text-sm text-white/60">
-            No properties are available for your account. Contact an administrator.
-          </p>
+          session.user.role === "PROPERTY_OWNER" ? (
+            <div className="space-y-4 rounded-xl border border-white/10 bg-white/[0.04] p-6 text-center">
+              <p className="text-sm text-white/60">
+                You don&apos;t have any properties yet. Add your first one to get started.
+              </p>
+              <div className="flex justify-center">
+                <AddOwnedPropertyWizard />
+              </div>
+            </div>
+          ) : (
+            <p className="rounded-xl border border-white/10 bg-white/[0.04] p-6 text-center text-sm text-white/60">
+              No properties are available for your account. Contact an administrator.
+            </p>
+          )
         ) : (
           <PropertyPicker properties={properties} />
         )}
